@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>주간 루틴 체크</title>
+<meta name="theme-color" content="#B5532B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="주간루틴">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3ECDD; --paper2:#EBE2CE; --ink:#2C2620; --ink-soft:#6B6051;
+    --clay:#B5532B; --clay-deep:#8F3F1F; --sage:#5E7351; --line:#D8CCB2; --gold:#C99A3C;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; overflow-x:hidden;}
+  body{
+    font-family:'Gowun Dodum',sans-serif; background:var(--paper); color:var(--ink);
+    min-height:100vh; padding:calc(22px + env(safe-area-inset-top)) 16px 44px; position:relative;
+    background-image:radial-gradient(circle at 18% 10%, rgba(181,83,43,.05), transparent 42%),
+                     radial-gradient(circle at 85% 90%, rgba(94,115,81,.05), transparent 42%);
+  }
+  .wrap{max-width:460px; margin:0 auto;}
+  header{text-align:center; margin-bottom:4px;}
+  .kicker{font-size:11px; letter-spacing:4px; color:var(--clay); margin-bottom:5px;}
+  h1{font-family:'Gowun Batang',serif; font-weight:700; font-size:26px; margin:0;}
+  .week{font-size:13px; color:var(--ink-soft); margin-top:6px;}
+  .progress-line{display:flex; align-items:center; gap:10px; margin:18px 2px 22px; font-size:12.5px; color:var(--ink-soft);}
+  .bar{flex:1; height:7px; background:var(--paper2); border-radius:99px; overflow:hidden; border:1px solid var(--line);}
+  .bar-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--clay),var(--gold)); border-radius:99px; transition:width .5s cubic-bezier(.2,.8,.2,1);}
+  .card{background:rgba(255,253,247,.7); border:1px solid var(--line); border-radius:16px; padding:17px 16px 18px; margin-bottom:14px;
+        box-shadow:0 8px 22px -16px rgba(44,38,32,.5); opacity:0; transform:translateY(12px); animation:rise .5s cubic-bezier(.2,.8,.2,1) forwards;}
+  .card:nth-child(2){animation-delay:.06s} .card:nth-child(3){animation-delay:.14s} .card:nth-child(4){animation-delay:.22s}
+  @keyframes rise{to{opacity:1; transform:translateY(0);}}
+  .card-head{display:flex; align-items:baseline; gap:9px; margin-bottom:3px;}
+  .tag{font-family:'Gowun Batang',serif; font-size:13px; font-weight:700; color:#fff; background:var(--clay); padding:2px 9px; border-radius:7px; flex-shrink:0;}
+  .tag.s2{background:var(--sage)} .tag.s6{background:var(--gold); color:#3a2c0c}
+  .title{font-family:'Gowun Batang',serif; font-size:18px; font-weight:700;}
+  .when{font-size:12.5px; color:var(--ink-soft); margin:2px 0 13px; line-height:1.5;}
+  .daylist{display:flex; flex-direction:column; gap:7px;}
+  .drow{display:flex; align-items:center; gap:11px; padding:11px 12px; border:1.5px solid var(--line); border-radius:12px; background:var(--paper); cursor:pointer; min-width:0; transition:background .18s,border-color .18s,transform .1s;}
+  .drow:active{transform:scale(.99);}
+  .dtag{width:42px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; line-height:1.15;}
+  .dtag .dn{font-family:'Gowun Batang',serif; font-weight:700; font-size:15px; color:var(--ink-soft);}
+  .dtag .dd2{font-size:10.5px; color:var(--ink-soft); opacity:.65;}
+  .dmid{flex:1; min-width:0;}
+  .dprev{font-size:13.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .dprev.empty{color:var(--ink-soft); opacity:.5;}
+  .dchev{flex-shrink:0; color:var(--line); font-size:15px; font-weight:bold;}
+  .drow.done{background:rgba(181,83,43,.08); border-color:var(--clay);}
+  .drow.done .dtag .dn{color:var(--clay);}
+  .drow.done .dchev{color:var(--clay);}
+  .today-badge{display:inline-block; font-size:9px; background:var(--clay); color:#fff; border-radius:5px; padding:1px 5px; margin-top:3px; letter-spacing:.5px;}
+  .hint{font-size:11.5px; color:var(--ink-soft); margin-top:12px; line-height:1.55;}
+  .hint b{color:var(--clay-deep);}
+  .toggle{display:flex; align-items:center; gap:13px; cursor:pointer; padding:12px 14px; border:1.5px solid var(--line); border-radius:13px; background:var(--paper); transition:.18s;}
+  .toggle:active{transform:scale(.99);}
+  .box{width:27px; height:27px; border-radius:8px; border:2px solid var(--sage); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:17px; color:transparent; transition:.2s;}
+  .toggle.done{background:var(--sage); border-color:#465939;}
+  .toggle.done .box{background:#fff; color:var(--sage);} .toggle.done .tlabel{color:#fff;}
+  .tlabel{font-size:14px;}
+  .counter{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .cbtn{width:48px; height:48px; border-radius:13px; border:1.5px solid var(--line); background:var(--paper); font-size:26px; font-family:'Gowun Batang',serif; color:var(--clay); cursor:pointer; transition:.1s; flex-shrink:0;}
+  .cbtn:active{transform:scale(.9); background:var(--paper2);}
+  .cbtn.minus{color:var(--ink-soft);}
+  .cnum{flex:1; text-align:center;}
+  .cnum b{font-family:'Gowun Batang',serif; font-size:38px; color:var(--gold); line-height:1; display:block;}
+  .cnum span{font-size:12px; color:var(--ink-soft);}
+  .footer{text-align:center; margin-top:18px; display:flex; flex-direction:column; gap:9px; align-items:center;}
+  .last{font-size:12px; color:var(--ink-soft); min-height:15px;}
+  .btn-line{display:flex; gap:9px;}
+  .ghost{background:none; border:1px solid var(--line); color:var(--ink-soft); font-family:'Gowun Dodum',sans-serif; font-size:12px; padding:8px 15px; border-radius:99px; cursor:pointer;}
+  .ghost:active{background:var(--paper2);}
+  .ghost.accent{border-color:var(--clay); color:var(--clay-deep);}
+  .saved{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper); font-size:12.5px; padding:9px 18px; border-radius:99px; opacity:0; transition:.3s; z-index:40; pointer-events:none;}
+  .saved.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .sheet-bg{position:fixed; inset:0; background:rgba(44,38,32,.45); opacity:0; pointer-events:none; transition:opacity .25s; z-index:30;}
+  .sheet-bg.open{opacity:1; pointer-events:auto;}
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:31; background:var(--paper); border-radius:22px 22px 0 0; border-top:1px solid var(--line);
+         padding:9px 18px calc(20px + env(safe-area-inset-bottom)); transform:translateY(110%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
+         max-width:460px; margin:0 auto; box-shadow:0 -10px 40px -12px rgba(44,38,32,.5);}
+  .sheet-bg.open .sheet{transform:translateY(0);}
+  .grip{width:42px; height:5px; border-radius:99px; background:var(--line); margin:4px auto 14px;}
+  .sheet-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .sheet-head #sheetDate{font-family:'Gowun Batang',serif; font-weight:700; font-size:19px;}
+  .sheet-head #sheetCount{font-size:12px; color:var(--ink-soft);}
+  #sheetText{width:100%; min-height:150px; resize:none; font-family:'Gowun Dodum',sans-serif; font-size:16px; line-height:1.7; color:var(--ink);
+             background:rgba(255,253,247,.85); border:1.5px solid var(--line); border-radius:13px; padding:13px; outline:none;}
+  #sheetText:focus{border-color:var(--clay);}
+  .sheet-btns{display:flex; gap:10px; margin-top:13px;}
+  .sheet-close{flex:1; padding:14px; border:1.5px solid var(--line); background:var(--paper); border-radius:13px; font-family:'Gowun Dodum',sans-serif; font-size:15px; color:var(--ink-soft); cursor:pointer;}
+  .sheet-save{flex:2; padding:14px; border:none; background:var(--clay); color:#fff; border-radius:13px; font-family:'Gowun Batang',serif; font-weight:700; font-size:16px; cursor:pointer;}
+  .sheet-save:active,.sheet-close:active{transform:scale(.98);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">WEEKLY ROUTINE</div>
+    <h1>수창님의 한 주</h1>
+    <div class="week" id="weekLabel">불러오는 중…</div>
+  </header>
+  <div class="progress-line">
+    <span id="pctText">0%</span>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <span id="cheer">시작!</span>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="tag">#1</span><span class="title">하루 1단락 직접 쓰기</span></div>
+    <div class="when">📍 자기 전 침대에서 · 줄을 눌러 바로 쓰기</div>
+    <div class="daylist" id="dayList"></div>
+    <div class="hint"><b>날짜를 누르면 그 자리에서 글을 써요.</b> 쓰면 자동 체크 + 저장. 못 써도 OK, 끊기지 않는 게 목표예요.</div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="tag s2">#2</span><span class="title">"왜?" 5번 파고들기</span></div>
+    <div class="when">📍 휴무일 커피 마실 때 · 주 1회</div>
+    <div class="toggle" id="whyToggle"><div class="box">✓</div><div class="tlabel">이번 주 "왜?" 5번 완료</div></div>
+    <div class="hint">3번에서 막혀도 ✅. <b>막힌 그 지점이 모르는 부분</b>이에요.</div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="tag s6">#6</span><span class="title">가르치기로 배우기</span></div>
+    <div class="when">📍 새 개념 배운 직후 · 비유로 1분 설명</div>
+    <div class="counter">
+      <button class="cbtn minus" id="teachMinus">−</button>
+      <div class="cnum"><b id="teachNum">0</b><span>번 설명함</span></div>
+      <button class="cbtn" id="teachPlus">+</button>
+    </div>
+    <div class="hint">설명하다 막히면 그 부분만 다시 보기. <b>남에게 설명한 지식이 손에 박혀요.</b></div>
+  </div>
+  <div class="footer">
+    <div class="last" id="lastWeek"></div>
+    <div class="btn-line">
+      <button class="ghost accent" id="copyBtn">📋 이번 주 글 복사</button>
+      <button class="ghost" id="resetBtn">초기화</button>
+    </div>
+  </div>
+</div>
+<div class="sheet-bg" id="sheetBg">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="sheet-head"><span id="sheetDate">날짜</span><span id="sheetCount">0자</span></div>
+    <textarea id="sheetText" placeholder="오늘 있었던 일, 본 손님, 느낀 거 아무거나 3~4문장…"></textarea>
+    <div class="sheet-btns">
+      <button class="sheet-close" id="sheetClose">닫기</button>
+      <button class="sheet-save" id="sheetSave">저장</button>
+    </div>
+  </div>
+</div>
+<div class="saved" id="savedToast">저장됨 ✓</div>
+
+<script>
+const KEY="soochang-routine-v1";
+const DAYS=["월","화","수","목","금","토","일"];
+let state=null;
+
+// === 휴대폰 브라우저 자체 저장소(localStorage) — 바탕화면 앱처럼 영구 보관 ===
+function lsGet(){ try{ return window.localStorage.getItem(KEY); }catch(e){ return null; } }
+function lsSet(v){ try{ window.localStorage.setItem(KEY, v); return true; }catch(e){ return false; } }
+
+function getMonday(date){const d=new Date(date);const w=d.getDay();d.setDate(d.getDate()+(w===0?-6:1-w));d.setHours(0,0,0,0);return d;}
+function fmt(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function todayIndex(){const w=new Date().getDay();return w===0?6:w-1;}
+function freshWeek(){return{weekId:fmt(getMonday(new Date())),daily:[0,0,0,0,0,0,0],text:["","","","","","",""],why:false,teach:0};}
+
+function load(){
+  const raw=lsGet();
+  if(raw){try{state=JSON.parse(raw);}catch(e){state=null;}}
+  const curMon=fmt(getMonday(new Date()));
+  if(!state||!state.cur){state={cur:freshWeek(),last:null};}
+  if(state.cur&&!Array.isArray(state.cur.text)){state.cur.text=["","","","","","",""];}
+  if(state.cur.weekId!==curMon){
+    const p=state.cur;
+    const done=Array.isArray(p.text)?p.text.filter(t=>(t||"").trim().length>0).length:0;
+    state.last={dailyDone:done,why:p.why,teach:p.teach};
+    state.cur=freshWeek();
+    save(true);
+  }
+  render();
+}
+let toastTimer=null;
+function save(silent){
+  const ok=lsSet(JSON.stringify(state));
+  if(!silent){const t=document.getElementById("savedToast");t.textContent=ok?"저장됨 ✓":"저장 실패(브라우저 설정 확인)";t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1000);}
+}
+
+function render(){
+  const c=state.cur, mon=getMonday(new Date());
+  const sun=new Date(mon);sun.setDate(sun.getDate()+6);
+  const mm=d=>`${d.getMonth()+1}월 ${d.getDate()}일`;
+  document.getElementById("weekLabel").textContent=`${mm(mon)} ~ ${mm(sun)}`;
+  const list=document.getElementById("dayList");list.innerHTML="";
+  const ti=todayIndex();
+  for(let i=0;i<7;i++){
+    const d=new Date(mon);d.setDate(d.getDate()+i);
+    const txt=(c.text[i]||"").trim();
+    const has=txt.length>0;
+    const row=document.createElement("div");
+    row.className="drow"+(has?" done":"");
+    const prev=has?txt.replace(/\n/g," "):"눌러서 쓰기";
+    row.innerHTML=`<div class="dtag"><div class="dn">${DAYS[i]}</div><div class="dd2">${d.getDate()}일</div>${i===ti?'<span class="today-badge">오늘</span>':''}</div>`+
+                  `<div class="dmid"><div class="dprev${has?'':' empty'}">${prev.replace(/</g,"&lt;")}</div></div>`+
+                  `<div class="dchev">${has?'✎':'›'}</div>`;
+    row.onclick=()=>openEditor(i);
+    list.appendChild(row);
+  }
+  document.getElementById("whyToggle").className="toggle"+(c.why?" done":"");
+  document.getElementById("teachNum").textContent=c.teach;
+  const dailyDone=c.text.filter(t=>(t||"").trim().length>0).length;
+  const score=dailyDone+(c.why?1:0)+Math.min(c.teach,2);
+  const pct=Math.round(score/10*100);
+  document.getElementById("barFill").style.width=pct+"%";
+  document.getElementById("pctText").textContent=pct+"%";
+  document.getElementById("cheer").textContent=pct===0?"시작!":pct<35?"가는 중":pct<70?"좋아요":pct<100?"거의 다!":"완벽 🎉";
+  const lw=document.getElementById("lastWeek");
+  lw.textContent=state.last?`지난주 — 글쓰기 ${state.last.dailyDone}/7 · 왜 ${state.last.why?"✓":"–"} · 설명 ${state.last.teach}회`:"";
+}
+
+let editIndex=-1;
+const sheetBg=document.getElementById("sheetBg");
+const sheetText=document.getElementById("sheetText");
+function openEditor(i){
+  editIndex=i;
+  const d=new Date(getMonday(new Date()));d.setDate(d.getDate()+i);
+  document.getElementById("sheetDate").textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${DAYS[i]})`;
+  sheetText.value=state.cur.text[i]||"";
+  document.getElementById("sheetCount").textContent=sheetText.value.length+"자";
+  sheetBg.classList.add("open");
+  setTimeout(()=>sheetText.focus(),320);
+}
+function closeEditor(){sheetBg.classList.remove("open");editIndex=-1;}
+sheetText.addEventListener("input",()=>{document.getElementById("sheetCount").textContent=sheetText.value.length+"자";});
+document.getElementById("sheetSave").onclick=()=>{if(editIndex<0)return;const v=sheetText.value;state.cur.text[editIndex]=v;state.cur.daily[editIndex]=v.trim().length>0?1:0;save();render();closeEditor();};
+document.getElementById("sheetClose").onclick=closeEditor;
+sheetBg.addEventListener("click",e=>{if(e.target===sheetBg)closeEditor();});
+document.getElementById("whyToggle").onclick=()=>{state.cur.why=!state.cur.why;save();render();};
+document.getElementById("teachPlus").onclick=()=>{state.cur.teach++;save();render();};
+document.getElementById("teachMinus").onclick=()=>{if(state.cur.teach>0){state.cur.teach--;save();render();}};
+document.getElementById("resetBtn").onclick=()=>{if(confirm("이번 주 기록을 모두 지울까요?")){state.cur=freshWeek();save();render();}};
+document.getElementById("copyBtn").onclick=async()=>{
+  const c=state.cur,mon=getMonday(new Date());
+  let out=`📓 ${document.getElementById("weekLabel").textContent}\n\n`,any=false;
+  c.text.forEach((t,i)=>{if((t||"").trim()){const d=new Date(mon);d.setDate(d.getDate()+i);out+=`[${d.getMonth()+1}/${d.getDate()} ${DAYS[i]}]\n${t.trim()}\n\n`;any=true;}});
+  if(!any){alert("아직 쓴 글이 없어요.");return;}
+  try{await navigator.clipboard.writeText(out.trim());const t=document.getElementById("savedToast");t.textContent="복사됨 ✓ 어디든 붙여넣기";t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1400);}
+  catch(e){prompt("아래 글을 길게 눌러 복사하세요:",out.trim());}
+};
+
+// 앱처럼 전체화면으로 열리도록 매니페스트 주입 (실패해도 앱 동작엔 영향 없음)
+try{
+  const manifest={name:"수창님의 주간 루틴",short_name:"주간루틴",display:"standalone",background_color:"#F3ECDD",theme_color:"#B5532B",start_url:"."};
+  const blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+  const link=document.createElement("link");link.rel="manifest";link.href=URL.createObjectURL(blob);
+  document.head.appendChild(link);
+}catch(e){}
+
+load();
+</script>
+</body>
+</html>
